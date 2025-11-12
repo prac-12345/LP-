@@ -1,0 +1,99 @@
+import java.util.*;
+
+class FirstFit {
+    public static void main(String args[]) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of memory blocks: ");
+        int m = sc.nextInt();
+        int block[] = new int[m];
+
+        for(int i=0; i<m; i++){
+            System.out.print("Size of Block " + (i+1) + ": ");
+            block[i] = sc.nextInt();
+        }
+
+        System.out.print("\nEnter number of processes: ");
+        int n = sc.nextInt();
+        int process[] = new int[n];
+        int alloc[] = new int[n];
+
+        for(int i=0; i<n; i++){
+            System.out.print("Size of Process P" + (i+1) + ": ");
+            process[i] = sc.nextInt();
+            alloc[i] = -1; // initially not allocated
+        }
+
+        // MAIN LOGIC: First Fit
+        for(int i=0; i<n; i++){
+            for(int j=0; j<m; j++){
+                if(block[j] >= process[i]){
+                    alloc[i] = j;
+                    block[j] -= process[i];
+                    break;
+                }
+            }
+        }
+
+        System.out.println("\nProcess\tSize\tAllocated Block");
+        for(int i=0; i<n; i++){
+            if(alloc[i] != -1)
+                System.out.println("P"+(i+1)+"\t"+process[i]+"\tB"+(alloc[i]+1));
+            else
+                System.out.println("P"+(i+1)+"\t"+process[i]+"\tNot Allocated");
+        }
+    }
+}
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+import java.util.*;
+class WorstFit {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of memory blocks: ");
+        int m = sc.nextInt();
+        int block[] = new int[m];
+        for (int i = 0; i < m; i++) {
+            System.out.print("Size of block " + (i+1) + ": ");
+            block[i] = sc.nextInt();
+        }
+
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+        int proc[] = new int[n];
+        for (int i = 0; i < n; i++) {
+            System.out.print("Size of process " + (i+1) + ": ");
+            proc[i] = sc.nextInt();
+        }
+
+        int alloc[] = new int[n];
+        Arrays.fill(alloc, -1);
+
+        // Worst Fit allocation
+        for (int i = 0; i < n; i++) {
+            int worstIndex = -1;
+            int maxLeft = -1;  // largest leftover after allocation
+            for (int j = 0; j < m; j++) {
+                if (block[j] >= proc[i]) {
+                    int left = block[j] - proc[i];
+                    if (left > maxLeft) {
+                        maxLeft = left;
+                        worstIndex = j;
+                    }
+                }
+            }
+            if (worstIndex != -1) {
+                alloc[i] = worstIndex;
+                block[worstIndex] -= proc[i];
+            }
+        }
+
+        System.out.println("\nProcess\tSize\tBlockAllocated");
+        for (int i = 0; i < n; i++) {
+            System.out.println("P" + (i+1) + "\t" + proc[i] + "\t" + (alloc[i] == -1 ? "-1" : "B" + (alloc[i]+1)));
+        }
+    }
+}
