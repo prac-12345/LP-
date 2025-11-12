@@ -1,0 +1,65 @@
+import java.util.*;
+
+class FIFO {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of frames: ");
+        int frames = sc.nextInt();
+
+        System.out.print("Enter number of pages: ");
+        int n = sc.nextInt();
+
+        int pages[] = new int[n];
+        System.out.println("Enter page reference string:");
+        for (int i = 0; i < n; i++) {
+            pages[i] = sc.nextInt();
+        }
+
+        int frame[] = new int[frames];
+        Arrays.fill(frame, -1);   // initially frames are empty (-1 means no page)
+        int pointer = 0;          // tells which frame to replace (oldest)
+        int faults = 0;           // page fault count
+
+        System.out.println("\nPage\tFrames");
+        for (int i = 0; i < n; i++) {
+            int page = pages[i];
+            boolean hit = false;
+
+            // Check if page already exists in frame (hit)
+            for (int j = 0; j < frames; j++) {
+                if (frame[j] == page) {
+                    hit = true;
+                    break;
+                }
+            }
+
+            // If page not found (FAULT → replace using FIFO)
+            if (!hit) {
+                faults++;
+
+                // If empty frame available, place page
+                boolean placed = false;
+                for (int j = 0; j < frames; j++) {
+                    if (frame[j] == -1) {
+                        frame[j] = page;
+                        placed = true;
+                        break;
+                    }
+                }
+                
+                frame[pointer] = page;   // replace oldest
+                pointer = (pointer + 1) % frames; // move pointer
+                faults++;
+            }
+
+            // Print current frames
+            System.out.print(page + "\t");
+            for (int j = 0; j < frames; j++) {
+                System.out.print(frame[j] + " ");
+            }
+            System.out.println();
+        }
+
+        System.out.println("\nTotal Page Faults = " + faults);
+    }
