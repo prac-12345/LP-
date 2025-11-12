@@ -1,0 +1,91 @@
+import java.util.*;
+
+class Optimal {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of frames: ");
+        int frames = sc.nextInt();
+
+        System.out.print("Enter number of pages: ");
+        int n = sc.nextInt();
+
+        int pages[] = new int[n];
+        System.out.println("Enter page reference string:");
+        for (int i = 0; i < n; i++) {
+            pages[i] = sc.nextInt();
+        }
+
+        int frame[] = new int[frames];
+        Arrays.fill(frame, -1); // initially empty frames
+
+        int faults = 0;
+
+        System.out.println("\nPage\tFrames");
+        for (int i = 0; i < n; i++) {
+            int page = pages[i];
+            boolean hit = false;
+
+            // Check if page already exists in frame (HIT)
+            for (int j = 0; j < frames; j++) {
+                if (frame[j] == page) {
+                    hit = true;
+                    break;
+                }
+            }
+
+            // If not found → Page Fault
+            if (!hit) {
+                faults++;
+
+                // If empty frame available, place page
+                boolean placed = false;
+                for (int j = 0; j < frames; j++) {
+                    if (frame[j] == -1) {
+                        frame[j] = page;
+                        placed = true;
+                        break;
+                    }
+                }
+
+                // If no empty frame → apply Optimal Replacement
+                if (!placed) {
+                    int farthest = -1;
+                    int indexToReplace = -1;
+
+                    for (int j = 0; j < frames; j++) {
+                        int k;
+                        // Look ahead to find when frame[j] will be used again
+                        for (k = i + 1; k < n; k++) {
+                            if (pages[k] == frame[j])
+                                break;
+                        }
+
+                        // If this page is not used again at all
+                        if (k == n) {
+                            indexToReplace = j;
+                            break;
+                        }
+
+                        // Else choose the page used farthest in future
+                        if (k > farthest) {
+                            farthest = k;
+                            indexToReplace = j;
+                        }
+                    }
+
+                    frame[indexToReplace] = page; // Replace page
+                }
+            }
+
+            // Display frames after each step
+            System.out.print(page + "\t");
+            for (int j = 0; j < frames; j++) {
+                System.out.print(frame[j] + " ");
+            }
+            System.out.println();
+        }
+
+        System.out.println("\nTotal Page Faults = " + faults);
+    }
+}
