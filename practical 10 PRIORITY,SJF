@@ -1,0 +1,143 @@
+import java.util.*;
+
+class Priority_NonPreemptive {
+    public static void main(String args[]) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+
+        int at[] = new int[n];   // Arrival Time
+        int bt[] = new int[n];   // Burst Time
+        int pr[] = new int[n];   // Priority
+        int ct[] = new int[n];   // Completion Time
+        int tat[] = new int[n];  // Turn Around Time
+        int wt[] = new int[n];   // Waiting Time
+        boolean done[] = new boolean[n]; // Completed processes
+
+        // Input
+        for(int i=0; i<n; i++){
+            System.out.print("AT of P"+(i+1)+": ");
+            at[i] = sc.nextInt();
+            System.out.print("BT of P"+(i+1)+": ");
+            bt[i] = sc.nextInt();
+            System.out.print("Priority of P"+(i+1)+": ");
+            pr[i] = sc.nextInt();
+        }
+
+        int time = 0, completed = 0;
+
+        while(completed < n){
+
+            int index = -1;
+            int bestPriority = Integer.MAX_VALUE; // smaller value = higher priority
+
+            // Find highest priority among arrived and not finished processes
+            for(int i=0; i<n; i++){
+                if(at[i] <= time && !done[i] && pr[i] < bestPriority){
+                    bestPriority = pr[i];
+                    index = i;
+                }
+            }
+
+            // If no process has arrived → CPU waits
+            if(index == -1){
+                time++;
+            }
+            else{
+                time = time + bt[index]; // run process fully
+                ct[index] = time;        // record completion time
+                done[index] = true;      // mark as completed
+                completed++;             // count +1
+            }
+        }
+
+        // Calculate TAT and WT
+        for(int i=0; i<n; i++){
+            tat[i] = ct[i] - at[i];  // Turn Around Time
+            wt[i]  = tat[i] - bt[i]; // Waiting Time
+        }
+
+        // Output
+        System.out.println("\nProcess  AT  BT  PR  CT  TAT  WT");
+        for(int i=0; i<n; i++){
+            System.out.println("P"+(i+1)+"\t"+at[i]+"\t"+bt[i]+"\t"+pr[i]+"\t"+ct[i]+"\t"+tat[i]+"\t"+wt[i]);
+        }
+    }
+}
+
+--------------------------------------------------------------------------------------------------------------
+
+import java.util.*;
+
+class SJF_Preemptive {
+    public static void main(String args[]) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+
+        int at[] = new int[n];   // arrival time
+        int bt[] = new int[n];   // burst time
+        int rt[] = new int[n];   // remaining time
+        int ct[] = new int[n];   // completion time
+        int tat[] = new int[n];  // turn around time
+        int wt[] = new int[n];   // waiting time
+
+        // Input burst & arrival times
+        for(int i=0; i<n; i++){
+            System.out.print("Arrival Time of P"+(i+1)+": ");
+            at[i] = sc.nextInt();
+            System.out.print("Burst Time of P"+(i+1)+": ");
+            bt[i] = sc.nextInt();
+            rt[i] = bt[i];       // remaining time initially = burst time
+        }
+
+        int time = 0, completed = 0;
+
+        // Run until all processes are completed
+        while(completed < n){
+
+            int index = -1;   
+            int minRT = Integer.MAX_VALUE;
+
+            // Find process with smallest remaining time among arrived ones
+            for(int i=0; i<n; i++){
+                if(at[i] <= time && rt[i] > 0 && rt[i] < minRT){
+                    minRT = rt[i];
+                    index = i;
+                }
+            }
+
+            // If no process is available, increase time (CPU idle)
+            if(index == -1){
+                time++;
+                continue;
+            }
+
+            // Execute process for 1 unit time
+            rt[index]--;
+            time++;
+
+            // If process completes now
+            if(rt[index] == 0){
+                ct[index] = time;   // Completion time
+                completed++;
+            }
+        }
+
+        // Calculate TAT & WT
+        for(int i=0; i<n; i++){
+            tat[i] = ct[i] - at[i];
+            wt[i]  = tat[i] - bt[i];
+        }
+
+        // Output
+        System.out.println("\nProcess  AT  BT  CT  TAT  WT");
+        for(int i=0; i<n; i++){
+            System.out.println("P"+(i+1)+"\t"+at[i]+"\t"+bt[i]+"\t"+ct[i]+"\t"+tat[i]+"\t"+wt[i]);
+        }
+    }
+}
