@@ -1,0 +1,115 @@
+import java.util.*;
+
+class FCFS_CT_Gantt {
+    public static void main(String args[]) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+
+        int at[] = new int[n];   // Arrival Time
+        int bt[] = new int[n];   // Burst Time
+        int wt[] = new int[n];   // Waiting Time
+        int tat[] = new int[n];  // Turn Around Time
+        int ct[] = new int[n];   // Completion Time
+
+        for(int i=0; i<n; i++){
+            System.out.print("Arrival Time of P"+(i+1)+": ");
+            at[i] = sc.nextInt();
+            System.out.print("Burst Time of P"+(i+1)+": ");
+            bt[i] = sc.nextInt();
+        }
+
+        int time = 0;
+        System.out.println("\nGANTT CHART:");
+        for(int i=0; i<n; i++){
+
+            if(time < at[i])     // If CPU was idle before process came
+                time = at[i];
+
+            System.out.print("| P" + (i+1) + " ");
+
+            ct[i] = time + bt[i];
+            tat[i] = ct[i] - at[i];
+            wt[i] = tat[i] - bt[i];
+            time = ct[i];
+        }
+        System.out.println("|");
+
+        System.out.println("\nProcess  AT  BT  WT  TAT  CT");
+        for(int i=0; i<n; i++){
+            System.out.println("P"+(i+1)+"\t"+at[i]+"\t"+bt[i]+"\t"+wt[i]+"\t"+tat[i]+"\t"+ct[i]);
+        }
+    }
+}
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+import java.util.*;
+
+class Priority_NonPreemptive {
+    public static void main(String args[]) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+
+        int at[] = new int[n];   // Arrival Time
+        int bt[] = new int[n];   // Burst Time
+        int pr[] = new int[n];   // Priority
+        int ct[] = new int[n];   // Completion Time
+        int tat[] = new int[n];  // Turn Around Time
+        int wt[] = new int[n];   // Waiting Time
+        boolean done[] = new boolean[n]; // Completed processes
+
+        // Input
+        for(int i=0; i<n; i++){
+            System.out.print("AT of P"+(i+1)+": ");
+            at[i] = sc.nextInt();
+            System.out.print("BT of P"+(i+1)+": ");
+            bt[i] = sc.nextInt();
+            System.out.print("Priority of P"+(i+1)+": ");
+            pr[i] = sc.nextInt();
+        }
+
+        int time = 0, completed = 0;
+
+        while(completed < n){
+
+            int index = -1;
+            int bestPriority = Integer.MAX_VALUE; // smaller value = higher priority
+
+            // Find highest priority among arrived and not finished processes
+            for(int i=0; i<n; i++){
+                if(at[i] <= time && !done[i] && pr[i] < bestPriority){
+                    bestPriority = pr[i];
+                    index = i;
+                }
+            }
+
+            // If no process has arrived → CPU waits
+            if(index == -1){
+                time++;
+            }
+            else{
+                time = time + bt[index]; // run process fully
+                ct[index] = time;        // record completion time
+                done[index] = true;      // mark as completed
+                completed++;             // count +1
+            }
+        }
+
+        // Calculate TAT and WT
+        for(int i=0; i<n; i++){
+            tat[i] = ct[i] - at[i];  // Turn Around Time
+            wt[i]  = tat[i] - bt[i]; // Waiting Time
+        }
+
+        // Output
+        System.out.println("\nProcess  AT  BT  PR  CT  TAT  WT");
+        for(int i=0; i<n; i++){
+            System.out.println("P"+(i+1)+"\t"+at[i]+"\t"+bt[i]+"\t"+pr[i]+"\t"+ct[i]+"\t"+tat[i]+"\t"+wt[i]);
+        }
+    }
+}
