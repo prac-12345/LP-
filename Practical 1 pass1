@@ -1,0 +1,121 @@
+import java.util.*;
+
+public class PassOneAssemblerWithLiterals {
+    public static void main(String[] args) {
+
+        // Sample Assembly Program
+        String program[] = {
+            "START 500",
+            "MOVER AREG, ='5'",
+            "ADD BREG, ='1'",
+            "MOVEM AREG, RESULT",
+            "RESULT DS 1",
+            "END"
+        };
+
+        // Opcode Table (MOT)
+        Map<String, String> MOT = new HashMap<>();
+        MOT.put("START", "AD");
+        MOT.put("END", "AD");
+        MOT.put("MOVER", "IS");
+        MOT.put("MOVEM", "IS");
+        MOT.put("ADD", "IS");
+        MOT.put("DC", "DL");
+        MOT.put("DS", "DL");
+
+        // Tables
+        Map<String, Integer> symbolTable = new LinkedHashMap<>();
+        Map<String, Integer> literalTable = new LinkedHashMap<>();
+
+        int LC = 0; // Location Counter
+
+        System.out.println("----- INTERMEDIATE CODE -----");
+
+        for (String line : program) {
+            String parts[] = line.split("[ ,]+");
+            String opcode = parts[0];
+
+            // START directive
+            if (opcode.equals("START")) {
+                LC = Integer.parseInt(parts[1]);
+                System.out.println("(AD,01)\t(C," + LC + ")");
+            }
+
+            // END directive (assign literal addresses)
+            else if (opcode.equals("END")) {
+                // Assign addresses to literals
+                for (String lit : literalTable.keySet()) {
+                    if (literalTable.get(lit) == -1) {
+                        literalTable.put(lit, LC);
+                        System.out.println("(DL,01)\t" + lit + " -> (C," + lit.replaceAll("[^0-9]", "") + ")");
+                        LC++;
+                    }
+                }
+                System.out.println("(AD,02)");
+                break;
+            }
+
+            // Declarative statement DC
+            else if (opcode.equals("DC")) {
+                symbolTable.put(parts[0], LC);
+                System.out.println("(DL,01)\t(C," + parts[1] + ")");
+                LC++;
+            }
+
+            // Declarative statement DS
+            else if (opcode.equals("DS")) {
+                symbolTable.put(parts[0], LC);
+                System.out.println("(DL,02)\t(C," + parts[1] + ")");
+                LC += Integer.parseInt(parts[1]);
+            }
+
+            // Imperative statements
+            else {
+                int index = 0;
+                if (!MOT.containsKey(parts[0])) {
+                    // Label detected
+                    symbolTable.put(parts[0], LC);
+                    index = 1;
+                    opcode = parts[1];
+                }
+
+                String operand1 = parts[index + 1];
+                String operand2 = parts.length > index + 2 ? parts[index + 2] : null;
+
+                // Handle operand2 as literal or symbol
+                if (operand2 != null && operand2.startsWith("='")) {
+                    literalTable.putIfAbsent(operand2, -1);
+                    System.out.println("(" + MOT.get(opcode) + ")\t" + operand1 + ", (L," + getLiteralIndex(literalTable, operand2) + ")");
+                } else {
+                    System.out.println("(" + MOT.get(opcode) + ")\t" + operand1 + ", " + operand2);
+                }
+
+                LC++;
+            }
+        }
+
+        // Display Symbol Table
+        System.out.println("\n----- SYMBOL TABLE -----");
+        System.out.println("Symbol\tAddress");
+        for (Map.Entry<String, Integer> e : symbolTable.entrySet()) {
+            System.out.println(e.getKey() + "\t" + e.getValue());
+        }
+
+        // Display Literal Table
+        System.out.println("\n----- LITERAL TABLE -----");
+        System.out.println("Literal\tAddress");
+        for (Map.Entry<String, Integer> e : literalTable.entrySet()) {
+            System.out.println(e.getKey() + "\t" + e.getValue());
+        }
+    }
+
+    // Helper method: get index of literal
+    static int getLiteralIndex(Map<String, Integer> litTab, String literal) {
+        int index = 1;
+        for (String key : litTab.keySet()) {
+            if (key.equals(literal)) return index;
+            index++;
+        }
+        return index;
+    }
+}
